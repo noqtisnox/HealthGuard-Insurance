@@ -1,0 +1,2 @@
+# This directory contains ML model files
+# Model files (*.pkl, *.h5, etc.) are ignored by git but the directory structure is preserved

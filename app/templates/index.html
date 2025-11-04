@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthGuard - Прогноз Ризику Ожиріння</title>
+    <!-- FIX: Правильне посилання на CDN Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Стилі для шрифту та основних елементів, які Tailwind не може стилізувати напряму */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Виправлення стандартних стилів для більшої витонченості */
+        .form-group { margin-bottom: 1.5rem; }
+        label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            font-weight: 600; 
+            color: #1f2937;
+            transition: color 0.15s;
+        }
+        
+        /* Забезпечення однакового вигляду для всіх полів введення/вибору */
+        input[type="number"], select {
+            transition: all 0.15s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        /* Стилізація фокусу для кращої доступності */
+        input:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4); /* Tailwind green-500 shadow */
+            border-color: #10B981; /* Tailwind green-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-8">
+
+    <div class="max-w-2xl mx-auto w-full bg-white p-6 sm:p-8 rounded-2xl shadow-xl border border-gray-200">
+        <h1 class="text-3xl font-extrabold mb-8 text-center text-green-700">
+            HealthGuard: Прогноз Ризику Ожиріння
+        </h1>
+
+        <form method="post" action="/api/v1/risk/predict-web" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+            <!-- 1. Gender -->
+            <div class="form-group">
+                <label for="Gender">Стать:</label>
+                <select name="Gender" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="Female">Жінка</option>
+                    <option value="Male" selected>Чоловік</option>
+                </select>
+            </div>
+            
+            <!-- 2. Age -->
+            <div class="form-group">
+                <label for="Age">Вік (роки):</label>
+                <input type="number" step="1" min="14" max="80" name="Age" required value="30" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+            </div>
+            
+            <!-- 3. Height -->
+            <div class="form-group">
+                <label for="Height">Зріст (м):</label>
+                <input type="number" step="0.01" min="1.0" max="2.5" name="Height" required value="1.75" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+            </div>
+            
+            <!-- 4. Weight -->
+            <div class="form-group">
+                <label for="Weight">Вага (кг):</label>
+                <input type="number" step="0.1" min="30" max="300" name="Weight" required value="85.0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+            </div>
+
+            <!-- 5. family_history_with_overweight -->
+            <div class="form-group">
+                <label for="family_history_with_overweight">Сімейна історія ожиріння:</label>
+                <select name="family_history_with_overweight" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="no">Ні</option>
+                    <option value="yes" selected>Так</option>
+                </select>
+            </div>
+            
+            <!-- 6. FAVC (High-calorie food) -->
+            <div class="form-group">
+                <label for="FAVC">Часте споживання висококалорійної їжі:</label>
+                <select name="FAVC" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="no">Ні</option>
+                    <option value="yes">Так</option>
+                </select>
+            </div>
+            
+            <!-- 7. FCVC (Vegetable consumption frequency) -->
+            <div class="form-group">
+                <label for="FCVC">Частота споживання овочів (1=Низька, 3=Висока):</label>
+                <input type="number" step="0.1" min="1" max="3" name="FCVC" required value="2.5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+            </div>
+            
+            <!-- 8. NCP (Number of main meals) -->
+            <div class="form-group">
+                <label for="NCP">Кількість основних прийомів їжі (1-4):</label>
+                <input type="number" step="0.1" min="1" max="4" name="NCP" required value="3.0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+            </div>
+
+            <!-- 9. CAEC (Food between meals) -->
+            <div class="form-group">
+                <label for="CAEC">Споживання їжі між осн. прийомами:</label>
+                <select name="CAEC" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="Never">Ніколи</option>
+                    <option value="Sometimes" selected>Іноді</option>
+                    <option value="Frequently">Часто</option>
+                    <option value="Always">Завжди</option>
+                </select>
+            </div>
+
+            <!-- 10. SMOKE -->
+            <div class="form-group">
+                <label for="SMOKE">Куріння:</label>
+                <select name="SMOKE" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="no">Ні</option>
+                    <option value="yes">Так</option>
+                </select>
+            </div>
+            
+            <!-- 11. CH2O (Water intake) -->
+            <div class="form-group">
+                <label for="CH2O">Щоденне споживання води (1=Низьке, 3=Високе):</label>
+                <input type="number" step="0.1" min="1" max="3" name="CH2O" required value="2.0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+            </div>
+
+            <!-- 12. SCC (Calorie monitoring) -->
+            <div class="form-group">
+                <label for="SCC">Контроль калорій:</label>
+                <select name="SCC" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="no" selected>Ні</option>
+                    <option value="yes">Так</option>
+                </select>
+            </div>
+            
+            <!-- 13. FAF (Physical activity frequency) -->
+            <div class="form-group">
+                <label for="FAF">Частота фізичної активності (0=Ніколи, 3=Щодня):</label>
+                <input type="number" step="0.1" min="0" max="3" name="FAF" required value="1.5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+            </div>
+            
+            <!-- 14. TUE (Time using technology) -->
+            <div class="form-group">
+                <label for="TUE">Час використання гаджетів (0=Мін, 2=Макс):</label>
+                <input type="number" step="0.1" min="0" max="2" name="TUE" required value="1.0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+            </div>
+
+            <!-- 15. CALC (Alcohol consumption) -->
+            <div class="form-group">
+                <label for="CALC">Частота споживання алкоголю:</label>
+                <select name="CALC" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="Never">Ніколи</option>
+                    <option value="Sometimes" selected>Іноді</option>
+                    <option value="Frequently">Часто</option>
+                    <option value="Always">Завжди</option>
+                </select>
+            </div>
+
+            <!-- 16. MTRANS (Main mode of transportation) -->
+            <div class="form-group">
+                <label for="MTRANS">Основний вид транспорту:</label>
+                <select name="MTRANS" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="Automobile">Автомобіль</option>
+                    <option value="Bike">Велосипед</option>
+                    <option value="Motorbike">Мотоцикл</option>
+                    <option value="Public_Transportation" selected>Громадський транспорт</option>
+                    <option value="Walking">Пішки</option>
+                </select>
+            </div>
+
+            <div class="col-span-1 md:col-span-2 mt-4 text-center">
+                <button type="submit" class="w-full md:w-1/2 p-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition duration-150 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    Зробити Прогноз Ризику
+                </button>
+            </div>
+        </form>
+
+        {% if category %}
+        <div class="result mt-8 p-6 rounded-lg border-2 border-green-500 bg-green-50 shadow-md">
+            <h2 class="text-2xl font-bold text-green-800 mb-2">✅ Результат Прогнозу:</h2>
+            <p class="text-xl">Категорія Ризику Ожиріння: <strong class="text-green-900">{{ category }}</strong></p>
+            <p class="text-sm text-gray-500 mt-2">Модель: CatBoost, Прогнозований код: {{ prediction|round(4) }}</p>
+            
+            <details class="mt-4">
+                <summary class="cursor-pointer text-gray-700 font-semibold hover:text-green-600 transition duration-150">Введені дані (Сирі)</summary>
+                <div class="mt-2 text-sm bg-gray-100 p-3 rounded-md border border-gray-200">
+                    {% for key, value in input_data.items() %}
+                        <p><strong>{{ key }}:</strong> {{ value }}</p>
+                    {% endfor %}
+                </div>
+            </details>
+        </div>
+        {% elif category is not none and "Помилка" in category %}
+        <div class="result mt-8 p-6 rounded-lg border-2 border-red-500 bg-red-50 shadow-md">
+            <h2 class="text-2xl font-bold text-red-800 mb-2">❌ Помилка:</h2>
+            <p class="text-xl text-red-900">{{ category }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+
+</body>
+</html>
