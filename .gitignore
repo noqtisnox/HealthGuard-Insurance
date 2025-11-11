@@ -70,3 +70,5 @@ temp/
 data/db/
 models/*
 !models/.gitkeep
+
+.idea/

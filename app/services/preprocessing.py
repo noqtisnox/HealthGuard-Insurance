@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from typing import Dict, Any
 
 # --- Масштабування та Кодування (Зібрано з Lab 2) ---

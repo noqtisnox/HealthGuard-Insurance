@@ -2,15 +2,11 @@ import os
 from fastapi import APIRouter, HTTPException
 import joblib
 from sklearn.model_selection import RandomizedSearchCV, StratifiedKFold
-from sklearn.ensemble import RandomForestClassifier
 from catboost import CatBoostClassifier
-from sklearn.svm import SVC
 from sklearn.metrics import f1_score
-from scipy.stats import randint as sp_randint, loguniform
+from scipy.stats import randint as sp_randint
 
 from ..services.utils import load_and_split_data, log_predictions
-# from ..database import crud # Add DB interaction for logging metrics
-# from ..schemas import TrainingStatus # Define a schema for response
 
 router = APIRouter()
 
@@ -41,8 +37,6 @@ def run_full_training_pipeline():
     cb_random_search.fit(X_train, y_train)
     best_cb_model = cb_random_search.best_estimator_
     optimized_models["CatBoostClassifier"] = best_cb_model
-
-    # ... Repeat RandomizedSearchCV for RF and SVC ...
 
     # --- Final Evaluation and Saving ---
     best_f1 = -1

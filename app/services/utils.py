@@ -22,7 +22,6 @@ def load_and_split_data(test_size: float = 0.2, random_state: int = 42):
     features = processed_data.drop(["NObeyesdad", "timestamp"], axis=1)
     target = processed_data["NObeyesdad"]
     
-    # FIX: Reverse the MinMax scaling on the target (0.0 to 1.0 -> 0 to 6)
     target = (target * 6).round().astype(int)
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -49,6 +48,5 @@ def log_predictions(model_name: str, y_true, y_pred: np.ndarray, source: str = "
         conn = sqlite3.connect(DB_SPLIT_PATH)
         log_df.to_sql("predictions", conn, if_exists="append", index=False)
         conn.close()
-        # In a real app, you might use an async DB library or a background task
     except sqlite3.Error as e:
         print(f"Error logging predictions: {e}")

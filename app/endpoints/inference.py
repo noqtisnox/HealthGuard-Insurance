@@ -10,15 +10,11 @@ import sqlite3
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from typing import Dict, Any
 import os
 
-# --- Надійне визначення шляхів до БД ---
-# Визначаємо базову директорію модуля, щоб шляхи були абсолютними
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Шляхи до БД. Використовуємо os.path.join для коректної роботи на різних ОС.
-# Припускаємо, що /app/services/ знаходиться на три рівні нижче від /data/db
 DB_SPLIT_PATH = os.path.join(BASE_DIR, '../../data/db/split_data.db')
 DB_INFERENCE_LOG_PATH = os.path.join(BASE_DIR, '../../data/db/inference_log.db')
 DB_PROCESSED_PATH = os.path.join(BASE_DIR, '../../data/db/obesity_data_processed.db') # Додано для повноти
@@ -114,26 +110,36 @@ def log_inference_input(raw_data: Dict[str, Any], prediction_coded: int):
     """
     timestamp = datetime.now().isoformat()
     
-    # --- КЛЮЧОВЕ ВИПРАВЛЕННЯ: Явний порядок колонок ---
-    INFERENCE_INPUT_COLUMNS = [
-        'timestamp', 'prediction_coded', 'Gender', 'Age', 'Height', 'Weight', 
-        'family_history_with_overweight', 'FAVC', 'FCVC', 'NCP', 'CAEC', 
-        'SMOKE', 'CH2O', 'SCC', 'FAF', 'TUE', 'CALC', 'MTRANS'
-    ]
-    
+    # Build the data dictionary in the correct order
     data_to_log = {
         'timestamp': timestamp,
         'prediction_coded': int(prediction_coded),
-        **raw_data
+        'Gender': raw_data.get('Gender'),
+        'Age': raw_data.get('Age'),
+        'Height': raw_data.get('Height'),
+        'Weight': raw_data.get('Weight'),
+        'family_history_with_overweight': raw_data.get('family_history_with_overweight'),
+        'FAVC': raw_data.get('FAVC'),
+        'FCVC': raw_data.get('FCVC'),
+        'NCP': raw_data.get('NCP'),
+        'CAEC': raw_data.get('CAEC'),
+        'SMOKE': raw_data.get('SMOKE'),
+        'CH2O': raw_data.get('CH2O'),
+        'SCC': raw_data.get('SCC'),
+        'FAF': raw_data.get('FAF'),
+        'TUE': raw_data.get('TUE'),
+        'CALC': raw_data.get('CALC'),
+        'MTRANS': raw_data.get('MTRANS')
     }
     
-    # Створюємо DataFrame з явним порядком колонок, щоб відповідати схемі БД
-    input_df = pd.DataFrame([data_to_log], columns=INFERENCE_INPUT_COLUMNS)
+    # Створюємо DataFrame - the dict already has the right keys, so just create from it
+    input_df = pd.DataFrame([data_to_log])
     
     try:
         conn = sqlite3.connect(DB_INFERENCE_LOG_PATH)
         input_df.to_sql("inference_inputs", conn, if_exists="append", index=False)
         conn.close()
+        print("Successfully logged inference input to DB")
         return True
     except sqlite3.Error as e:
         print(f"Error logging inference input to DB: {e}")
@@ -202,10 +208,8 @@ async def submit_prediction_form(
         'MTRANS': MTRANS_raw,
     }
     
-    # Print the dictionary for debugging
-    print("\nRaw input data dictionary:")
-    for key, value in raw_input_data.items():
-        print(f"{key}: {value}")
+    # IMPORTANT: Save a copy BEFORE preprocessing, as preprocessing might modify the dict
+    raw_input_data_backup = raw_input_data.copy()
     
     try:
         # --- КРОК 1: ПОПЕРЕДНЯ ОБРОБКА ---
@@ -229,7 +233,7 @@ async def submit_prediction_form(
     predicted_category = categories[int(prediction_coded)]
 
 
-    log_inference_input(raw_input_data, prediction_coded)    
+    log_inference_input(raw_input_data_backup, int(prediction_coded))    
     log_predictions("CatBoost", [None]*len(input_df), np.array([prediction_coded]), source="inference")
     
     return templates.TemplateResponse(
