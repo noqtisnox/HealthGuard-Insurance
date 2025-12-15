@@ -45,12 +45,10 @@ venv.bak/
 */.ipynb_checkpoints/*
 
 # Database files
-*.db
 *.sqlite
 *.sqlite3
 
 # Model files and data
-*.pkl
 *.h5
 *.joblib
 *.sav
@@ -67,8 +65,6 @@ temp/
 .DS_Store
 
 # Project specific
-data/db/
-models/*
 !models/.gitkeep
 
 .idea/
