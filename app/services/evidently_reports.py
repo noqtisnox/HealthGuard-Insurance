@@ -8,6 +8,7 @@ import sqlite3
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Tuple
 
 from evidently import Report
 from evidently.metrics import *
@@ -21,7 +22,7 @@ REPORTS_DIR = os.path.join(BASE_DIR, 'reports')
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
 
-def load_extended_data(limit: int = None) -> pd.DataFrame:
+def load_extended_data(limit: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Load extended data from database.
     
@@ -56,7 +57,7 @@ def generate_data_summary_report() -> str:
     """
     print("Generating data summary report...")
     
-    df = load_extended_data()
+    df, _ = load_extended_data()
     
     if df.empty:
         print("No data available for report generation")
@@ -130,7 +131,7 @@ def generate_obesity_analysis_report() -> str:
     """
     print("Generating obesity analysis report...")
     
-    df = load_extended_data()
+    df, _ = load_extended_data()
     
     if df.empty:
         print("No data available for report generation")
@@ -141,16 +142,15 @@ def generate_obesity_analysis_report() -> str:
         obesity_cols = [col for col in df.columns if col not in ['timestamp']]
         
         report = Report(metrics=[
-            ColumnCount(),
-            ValueDrift(),
+            DataSummaryPreset()
         ])
         
-        report.run(reference_data=df[obesity_cols])
+        result = report.run(df[obesity_cols], None)
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_path = os.path.join(REPORTS_DIR, f"obesity_analysis_{timestamp}.html")
         
-        report.save_html(output_path)
+        result.save_html(output_path)
         print(f"✓ Obesity analysis report saved to: {output_path}")
         
         return output_path
@@ -196,7 +196,7 @@ def get_reports_summary() -> dict:
         Dictionary with reports summary
     """
     try:
-        df = load_extended_data()
+        df, _ = load_extended_data()
         
         summary = {
             "total_records": len(df),

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .endpoints import inference, training
+from .endpoints import inference, training, monitoring
 from fastapi.staticfiles import StaticFiles
 
 from pathlib import Path
@@ -12,6 +12,7 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 
 app.include_router(training.router, prefix="/api/v1/training", tags=["Training"])
 app.include_router(inference.router, prefix="/api/v1/risk", tags=["Inference"])
+app.include_router(monitoring.router, prefix="/api/v1/monitoring", tags=["Monitoring"])
 
 @app.get("/")
 async def redirect_to_form():
